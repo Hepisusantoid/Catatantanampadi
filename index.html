@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Catatan Padi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --green:#2d6a4f;--green2:#40916c;--green3:#52b788;
+  --greenlt:#d8f3dc;--greenmd:#b7e4c7;
+  --gold:#d4a017;--goldlt:#fef9ee;
+  --bg:#f4f7f4;--card:#ffffff;--border:#e2ebe3;
+  --text:#1a2e1c;--muted:#6b8f71;
+  --danger:#c0392b;--dangerlt:#fdecea;
+  --blue:#1565C0;--bluelt:#E3F2FD;
+}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);min-height:100vh;color:var(--text);}
+
+/* ═══ HOME ═══ */
+#home{display:block;}
+#home .hero{background:var(--green);padding:52px 24px 90px;text-align:center;position:relative;overflow:hidden;}
+#home .hero::before{content:'🌾';position:absolute;font-size:180px;opacity:0.07;right:-20px;top:-20px;pointer-events:none;}
+#home .hero h1{color:#fff;font-size:26px;font-weight:700;letter-spacing:-0.3px;}
+#home .hero p{color:rgba(255,255,255,0.6);font-size:13px;margin-top:6px;font-weight:300;}
+
+/* status bar di hero */
+.hero-status{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:14px;font-size:12px;color:rgba(255,255,255,0.7);font-weight:500;}
+.hero-dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,0.4);}
+.hero-dot.ok{background:#69f0ae;}
+.hero-dot.loading{background:#ffd740;animation:pulse 1s infinite;}
+.hero-dot.error{background:#ff5252;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+
+.hero-actions{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:16px;}
+.hero-cfg-btn{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.25);border-radius:20px;color:#fff;font-size:12px;font-weight:600;padding:6px 14px;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;transition:background 0.18s;}
+.hero-cfg-btn:hover{background:rgba(255,255,255,0.25);}
+
+.seasons-wrap{max-width:520px;margin:-48px auto 40px;padding:0 18px;}
+
+.fab{position:fixed;bottom:28px;right:22px;width:56px;height:56px;background:var(--green);color:#fff;border:none;border-radius:50%;font-size:28px;line-height:1;box-shadow:0 4px 18px rgba(45,106,79,0.35);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background 0.2s,transform 0.18s,box-shadow 0.18s;z-index:100;}
+.fab:hover{background:var(--green2);transform:scale(1.08);box-shadow:0 6px 24px rgba(45,106,79,0.45);}
+.fab:active{transform:scale(0.95);}
+
+.season-card{background:var(--card);border:1.5px solid var(--border);border-radius:16px;padding:18px 20px;margin-bottom:12px;cursor:pointer;transition:transform 0.18s,box-shadow 0.18s,border-color 0.18s;position:relative;}
+.season-card:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(45,106,79,0.1);border-color:var(--green3);}
+.season-card .sc-top{display:flex;align-items:center;justify-content:space-between;gap:6px;}
+.season-card .sc-name{font-size:16px;font-weight:700;color:var(--text);flex:1;}
+.season-card .sc-count{font-size:12px;color:var(--muted);background:var(--greenlt);padding:3px 10px;border-radius:20px;white-space:nowrap;}
+.season-card .sc-stats{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;margin-top:14px;}
+.season-card .sc-stat{background:var(--bg);border-radius:10px;padding:10px 12px;}
+.season-card .sc-stat .sl{font-size:10px;color:var(--muted);margin-bottom:3px;}
+.season-card .sc-stat .sv{font-size:13px;font-weight:600;color:var(--text);}
+.season-card .sc-del{background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;padding:4px 6px;border-radius:8px;transition:background 0.15s,color 0.15s;flex-shrink:0;}
+.season-card .sc-del:hover{background:var(--dangerlt);color:var(--danger);}
+.season-card .sc-arrow{color:var(--muted);font-size:20px;margin-left:2px;flex-shrink:0;}
+.season-card:hover .sc-arrow{color:var(--green);}
+.sc-move-wrap{display:flex;flex-direction:column;gap:1px;flex-shrink:0;}
+.sc-move{background:none;border:none;color:var(--muted);font-size:12px;cursor:pointer;padding:1px 5px;border-radius:6px;line-height:1.4;transition:background 0.15s,color 0.15s;}
+.sc-move:hover{background:var(--greenlt);color:var(--green);}
+.sc-move:disabled{opacity:0.2;cursor:default;}
+
+.empty-state{text-align:center;padding:40px 20px;color:var(--muted);font-size:14px;line-height:1.6;}
+
+/* ═══ SEASON PAGE ═══ */
+.page{display:none;min-height:100vh;}
+.page.active{display:block;}
+.page-header{background:var(--green);padding:20px 18px 64px;display:flex;align-items:center;gap:12px;}
+.back-btn{background:rgba(255,255,255,0.15);border:none;border-radius:10px;width:38px;height:38px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#fff;font-size:18px;flex-shrink:0;transition:background 0.15s;}
+.back-btn:hover{background:rgba(255,255,255,0.25);}
+.page-header h2{color:#fff;font-size:19px;font-weight:700;flex:1;}
+.page-header .edit-season-name{background:rgba(255,255,255,0.15);border:none;border-radius:8px;padding:4px 10px;color:#fff;font-size:13px;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;transition:background 0.15s;}
+.page-header .edit-season-name:hover{background:rgba(255,255,255,0.25);}
+
+.season-content{max-width:520px;margin:-44px auto 40px;padding:0 18px;}
+
+/* Summary bar */
+.summary-bar{background:var(--card);border:1.5px solid var(--border);border-radius:16px;padding:16px 18px;margin-bottom:16px;}
+.summary-bar h3{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:12px;}
+.sum-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.sum-item{background:var(--bg);border-radius:10px;padding:10px 12px;}
+.sum-item .sl{font-size:10px;color:var(--muted);margin-bottom:3px;}
+.sum-item .sv{font-size:14px;font-weight:700;color:var(--green);}
+.sum-item .sv.gold{color:var(--gold);}
+.sum-item .sv.blue{color:var(--blue);}
+
+/* Add lahan */
+.add-lahan-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:13px;background:transparent;color:var(--green);border:2px dashed var(--green3);border-radius:14px;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;margin-bottom:16px;transition:background 0.2s,border-color 0.2s;}
+.add-lahan-btn:hover{background:var(--greenlt);border-color:var(--green);}
+
+/* Lahan card */
+.lahan-card{background:var(--card);border:1.5px solid var(--border);border-radius:16px;margin-bottom:12px;overflow:hidden;}
+.lahan-head{display:flex;align-items:center;padding:14px 16px;cursor:pointer;gap:10px;}
+.lahan-num{background:var(--green);color:#fff;font-size:11px;font-weight:700;border-radius:8px;padding:3px 9px;flex-shrink:0;}
+.lahan-name-wrap{flex:1;}
+.lahan-title{font-size:14px;font-weight:600;color:var(--text);}
+.lahan-sub{font-size:11px;color:var(--muted);margin-top:1px;}
+.lahan-status{font-size:10px;padding:3px 9px;border-radius:20px;flex-shrink:0;}
+.lahan-status.done{background:var(--greenlt);color:var(--green);}
+.lahan-status.pending{background:#f0f0f0;color:#888;}
+.lahan-chevron{color:var(--muted);font-size:16px;transition:transform 0.2s;flex-shrink:0;}
+.lahan-card.open .lahan-chevron{transform:rotate(180deg);}
+.lahan-del{background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;padding:4px 6px;border-radius:6px;transition:background 0.15s,color 0.15s;flex-shrink:0;}
+.lahan-del:hover{background:var(--dangerlt);color:var(--danger);}
+
+.lahan-body{display:none;padding:0 16px 16px;border-top:1px solid var(--border);}
+.lahan-card.open .lahan-body{display:block;}
+
+.field-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px;}
+.field-group{display:flex;flex-direction:column;gap:3px;}
+.field-group.full{grid-column:1/-1;}
+.field-group label{font-size:11px;color:var(--muted);font-weight:500;}
+.field-group input,.field-group select,.field-group textarea{border:1.5px solid var(--border);border-radius:10px;padding:9px 12px;font-size:13px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--text);background:#fff;outline:none;transition:border-color 0.18s;width:100%;}
+.field-group input:focus,.field-group select:focus,.field-group textarea:focus{border-color:var(--green3);}
+.field-group textarea{resize:vertical;min-height:60px;}
+
+/* luas badge */
+.luas-badge{display:inline-block;background:var(--bluelt);color:var(--blue);font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;margin-left:6px;}
+
+.metode-wrap{display:flex;flex-wrap:wrap;gap:6px;align-items:center;}
+.metode-pill{display:inline-flex;align-items:center;gap:4px;padding:6px 11px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;border:1.5px solid var(--border);background:#fff;color:var(--muted);transition:all 0.15s;white-space:nowrap;}
+.metode-pill.active{background:var(--green);color:#fff;border-color:var(--green);}
+.metode-pill .pill-del{font-size:11px;opacity:0.7;margin-left:2px;line-height:1;}
+.metode-pill .pill-del:hover{opacity:1;}
+.metode-add-btn{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:var(--greenlt);border:1.5px dashed var(--green3);color:var(--green);font-size:18px;cursor:pointer;transition:background 0.15s,border-color 0.15s;flex-shrink:0;line-height:1;}
+.metode-add-btn:hover{background:var(--greenmd);border-color:var(--green);}
+
+.result-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:12px;}
+.res-box{background:var(--greenlt);border-radius:10px;padding:10px 12px;}
+.res-box .rl{font-size:10px;color:var(--green2);margin-bottom:3px;}
+.res-box .rv{font-size:14px;font-weight:700;color:var(--green);font-family:'DM Mono',monospace;}
+
+/* ═══ MODALS ═══ */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);display:flex;align-items:center;justify-content:center;z-index:999;padding:20px;}
+.modal-box{background:#fff;border-radius:20px;padding:28px 24px;width:100%;max-width:380px;box-shadow:0 20px 60px rgba(0,0,0,0.2);animation:fadeIn 0.2s ease;}
+.modal-box h3{font-size:17px;font-weight:700;margin-bottom:8px;color:var(--text);}
+.modal-box p.modal-desc{font-size:13px;color:var(--muted);margin-bottom:16px;line-height:1.5;}
+.modal-box input{width:100%;border:1.5px solid var(--border);border-radius:10px;padding:11px 14px;font-size:14px;font-family:'Plus Jakarta Sans',sans-serif;outline:none;transition:border-color 0.18s;margin-bottom:10px;}
+.modal-box input:last-of-type{margin-bottom:0;}
+.modal-box input:focus{border-color:var(--green3);}
+.modal-btns{display:flex;gap:10px;margin-top:18px;}
+.modal-btn{flex:1;padding:12px;border-radius:10px;border:none;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:background 0.2s;}
+.modal-btn.primary{background:var(--green);color:#fff;}
+.modal-btn.primary:hover{background:var(--green2);}
+.modal-btn.secondary{background:var(--bg);color:var(--text);}
+.modal-btn.secondary:hover{background:var(--border);}
+.modal-btn.danger{background:var(--danger);color:#fff;}
+.confirm-modal .modal-box p{font-size:14px;color:var(--muted);margin-top:6px;line-height:1.5;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--text);color:#fff;padding:11px 22px;border-radius:100px;font-size:13px;font-weight:600;box-shadow:0 8px 32px rgba(0,0,0,0.2);transition:transform 0.35s cubic-bezier(0.34,1.56,0.64,1),opacity 0.35s;opacity:0;z-index:1000;white-space:nowrap;}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1;}
+.toast.ok{background:var(--green);}
+.toast.err{background:var(--danger);}
+
+footer{text-align:center;padding:24px;font-size:12px;color:var(--muted);}
+</style>
+</head>
+<body>
+
+<!-- ══ HOME ══ -->
+<div id="home">
+  <div class="hero">
+    <h1>🌾 Catatan Padi</h1>
+    <p>Kelola data panen per musim tanam</p>
+    <div class="hero-status">
+      <div class="hero-dot loading" id="hero-dot"></div>
+      <span id="hero-status-text">Memuat data...</span>
+    </div>
+    <div class="hero-actions">
+      <button class="hero-cfg-btn" onclick="openConfig()">⚙️ Konfigurasi JSONBin</button>
+    </div>
+  </div>
+  <div class="seasons-wrap">
+    <div id="seasons-list"></div>
+  </div>
+  <footer>Catatan Padi &copy; 2026</footer>
+</div>
+<button class="fab" id="fab-btn" onclick="openAddSeason()" title="Tambah Musim Tanam">＋</button>
+
+<!-- ══ SEASON PAGE ══ -->
+<div id="season-page" class="page">
+  <div class="page-header">
+    <button class="back-btn" onclick="goHome()">&#8592;</button>
+    <h2 id="season-page-title"></h2>
+    <button class="edit-season-name" onclick="editSeasonName()">&#9998; Edit</button>
+  </div>
+  <div class="season-content">
+    <div class="summary-bar">
+      <h3>📊 Ringkasan Musim</h3>
+      <div class="sum-grid">
+        <div class="sum-item"><div class="sl">Total Pendapatan</div><div class="sv gold" id="sum-income">Rp 0</div></div>
+        <div class="sum-item"><div class="sl">Total Berat Est.</div><div class="sv" id="sum-weight">0 kg</div></div>
+        <div class="sum-item"><div class="sl">Total Karung</div><div class="sv" id="sum-bags">0 krg</div></div>
+        <div class="sum-item"><div class="sl">Total Luas Garapan</div><div class="sv blue" id="sum-luas">0 ha</div></div>
+      </div>
+    </div>
+    <button class="add-lahan-btn" onclick="addLahan()">＋ Tambah Lahan</button>
+    <div id="lahan-list"></div>
+  </div>
+</div>
+
+<!-- ══ MODAL: Config JSONBin ══ -->
+<div id="modal-config" class="modal-overlay" style="display:none;" onclick="if(event.target===this&&configured)closeModal('modal-config')">
+  <div class="modal-box" onclick="event.stopPropagation()">
+    <h3>⚙️ Konfigurasi JSONBin</h3>
+    <p class="modal-desc">Masukkan API Key dan Bin ID dari <strong>jsonbin.io</strong>. Data disimpan di browser Anda.</p>
+    <input type="text" id="cfg-key" placeholder="Master Key: $2a$10$xxxxxxxxxx" />
+    <input type="text" id="cfg-bin" placeholder="Bin ID: 65f2a1b3xxxxxxxxxx" />
+    <div class="modal-btns">
+      <button class="modal-btn secondary" onclick="if(configured)closeModal('modal-config')">Batal</button>
+      <button class="modal-btn primary" onclick="saveConfig()">💾 Simpan & Muat Data</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL: Add/Edit Season ══ -->
+<div id="modal-season" class="modal-overlay" style="display:none;" onclick="closeModal('modal-season')">
+  <div class="modal-box" onclick="event.stopPropagation()">
+    <h3 id="modal-season-title">Tambah Musim Tanam</h3>
+    <input type="text" id="season-name-input" placeholder="Contoh: Rendeng 2026" />
+    <div class="modal-btns">
+      <button class="modal-btn secondary" onclick="closeModal('modal-season')">Batal</button>
+      <button class="modal-btn primary" onclick="saveSeason()">Simpan</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL: Tambah Metode ══ -->
+<div id="modal-metode" class="modal-overlay" style="display:none;" onclick="closeModal('modal-metode')">
+  <div class="modal-box" onclick="event.stopPropagation()">
+    <h3>Tambah Metode</h3>
+    <input type="text" id="metode-input" placeholder="Cth: Tugal, SRI, dll..." />
+    <div class="modal-btns">
+      <button class="modal-btn secondary" onclick="closeModal('modal-metode')">Batal</button>
+      <button class="modal-btn primary" id="metode-save-btn">Simpan</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL: Confirm Delete ══ -->
+<div id="modal-confirm" class="confirm-modal modal-overlay" style="display:none;" onclick="closeModal('modal-confirm')">
+  <div class="modal-box" onclick="event.stopPropagation()">
+    <h3 id="confirm-title">Hapus?</h3>
+    <p id="confirm-msg"></p>
+    <div class="modal-btns">
+      <button class="modal-btn secondary" onclick="closeModal('modal-confirm')">Batal</button>
+      <button class="modal-btn danger" id="confirm-ok-btn">Hapus</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════════
+//  CONFIG & JSONBIN
+// ══════════════════════════════════════════════
+const CFG_KEY = 'catatan_padi_cfg';
+let configured = false;
+
+function getConfig(){
+  try{ return JSON.parse(localStorage.getItem(CFG_KEY))||{}; }catch{ return {}; }
+}
+function openConfig(){
+  const c = getConfig();
+  document.getElementById('cfg-key').value = c.apiKey||'';
+  document.getElementById('cfg-bin').value = c.binId||'';
+  document.getElementById('modal-config').style.display = 'flex';
+}
+function saveConfig(){
+  const apiKey = document.getElementById('cfg-key').value.trim();
+  const binId  = document.getElementById('cfg-bin').value.trim();
+  if(!apiKey||!binId){ showToast('⚠ Isi kedua kolom!','err'); return; }
+  localStorage.setItem(CFG_KEY, JSON.stringify({apiKey,binId}));
+  configured = true;
+  closeModal('modal-config');
+  loadFromBin();
+}
+function binURL(){ return `https://api.jsonbin.io/v3/b/${getConfig().binId}`; }
+function binHeaders(){ return {'X-Master-Key':getConfig().apiKey,'Content-Type':'application/json'}; }
+
+function setHeroStatus(state, text){
+  document.getElementById('hero-dot').className = 'hero-dot '+state;
+  document.getElementById('hero-status-text').textContent = text;
+}
+
+async function loadFromBin(){
+  setHeroStatus('loading','Memuat data...');
+  try{
+    const res  = await fetch(binURL()+'/latest', {headers:binHeaders()});
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const json = await res.json();
+    const rec  = json.record;
+    if(rec && Array.isArray(rec.seasons)){
+      db.seasons = rec.seasons;
+    }
+    setHeroStatus('ok','Tersambung · JSONBin');
+    renderHome();
+    showToast('✓ Data dimuat dari cloud','ok');
+  }catch(err){
+    setHeroStatus('error','Gagal memuat');
+    showToast('⚠ Gagal: '+err.message,'err');
+  }
+}
+
+async function saveToBin(){
+  try{
+    const res = await fetch(binURL(),{
+      method:'PUT', headers:binHeaders(),
+      body: JSON.stringify({seasons: db.seasons})
+    });
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    setHeroStatus('ok','Tersimpan · '+new Date().toLocaleTimeString('id-ID'));
+  }catch(err){
+    setHeroStatus('error','Gagal simpan');
+    showToast('⚠ Gagal menyimpan ke cloud','err');
+  }
+}
+
+// ══════════════════════════════════════════════
+//  DATA STORE (localStorage sebagai cache lokal)
+// ══════════════════════════════════════════════
+let db = JSON.parse(localStorage.getItem('catatan-padi')||'null');
+if(!db){
+  db = {
+    seasons:[{
+      id:'s1', name:'Rendeng 2026',
+      lahans:[
+        {id:'l1',name:'Etan',luas:'',tanam:'2025-11-17',panen:'2026-03-27',varietas:'Legowo',metode:'Tabur',metodeList:['Tabur'],karung:'112',berat:'6643',harga:'6300',pendapatan:'37315800',ratarata:'59.3125',ojek:'8000',pengepul:'Yuda',catatan:''},
+        {id:'l2',name:'Sandinge mbah Mon',luas:'',tanam:'2025-11-06',panen:'2026-03-15',varietas:'Legowo',metode:'Tabur',metodeList:['Tabur'],karung:'73',berat:'4530.38',harga:'6400',pendapatan:'24608985',ratarata:'62.06',ojek:'15000',pengepul:'Rusdi',catatan:'Berat estimasi'},
+        {id:'l3',name:'Sandinge mbah Semi',luas:'',tanam:'2025-11-08',panen:'2026-03-26',varietas:'Legowo',metode:'Tabur',metodeList:['Tabur'],karung:'60',berat:'3632',harga:'6300',pendapatan:'20312120',ratarata:'60.54',ojek:'7000',pengepul:'Rusdi',catatan:''},
+        {id:'l4',name:'Sandinge lek Najak',luas:'',tanam:'2025-11-03',panen:'2026-03-15',varietas:'Legowo',metode:'Tabur',metodeList:['Tabur'],karung:'55',berat:'3413.3',harga:'6400',pendapatan:'18541015',ratarata:'62.06',ojek:'15000',pengepul:'Rusdi',catatan:'Kompensasi 7 & 12 Nov 2025. Pulang 2 karung.'},
+        {id:'l5',name:'Kaplingan',luas:'',tanam:'2025-11-21',panen:'',varietas:'Galur Nusantara',metode:'Tandur',metodeList:['Tandur'],karung:'11',berat:'',harga:'',pendapatan:'',ratarata:'',ojek:'',pengepul:'',catatan:''},
+        {id:'l6',name:'Ngomah',luas:'',tanam:'2025-10-25',panen:'2026-02-20',varietas:'Legowo',metode:'Tabur',metodeList:['Tabur'],karung:'73',berat:'4813',harga:'6300',pendapatan:'21256000',ratarata:'65.93',ojek:'10000',pengepul:'Agus',catatan:'Berat aktual 3.956 kg (60), estimasi total 4.813'},
+        {id:'l7',name:'Bekas Rudi',luas:'',tanam:'2025-11-09',panen:'2026-03-29',varietas:'Cibatu Legowo',metode:'Tabur',metodeList:['Tabur'],karung:'100',berat:'6053',harga:'6300',pendapatan:'29715880',ratarata:'60.54',ojek:'7000',pengepul:'Rusdi',catatan:'Panen 2 tahap: 67+33 karung'},
+        {id:'l8',name:'Tran Anyar (2 tempat)',luas:'',tanam:'2025-11-24',panen:'',varietas:'Legowo Cibatu',metode:'Tabur',metodeList:['Tabur'],karung:'',berat:'',harga:'',pendapatan:'',ratarata:'',ojek:'',pengepul:'',catatan:''}
+      ]
+    }]
+  };
+}
+
+function saveDb(){
+  localStorage.setItem('catatan-padi', JSON.stringify(db));
+  if(configured) saveToBin();
+}
+
+// ══════════════════════════════════════════════
+//  NAVIGATION
+// ══════════════════════════════════════════════
+let currentSeasonId = null;
+
+function goHome(){
+  document.getElementById('home').style.display='block';
+  document.getElementById('season-page').classList.remove('active');
+  document.getElementById('fab-btn').style.display='flex';
+  window.scrollTo(0,0);
+  renderHome();
+}
+
+function showSeason(sid){
+  currentSeasonId = sid;
+  document.getElementById('home').style.display='none';
+  document.getElementById('season-page').classList.add('active');
+  document.getElementById('fab-btn').style.display='none';
+  window.scrollTo(0,0);
+  renderSeasonPage();
+}
+
+// ══════════════════════════════════════════════
+//  HOME RENDER
+// ══════════════════════════════════════════════
+function renderHome(){
+  const list = document.getElementById('seasons-list');
+  if(!db.seasons.length){
+    list.innerHTML='<div class="empty-state">Belum ada musim tanam.<br>Tap tombol <strong>＋</strong> untuk menambah.</div>';
+    return;
+  }
+  const n = db.seasons.length;
+  list.innerHTML = db.seasons.map((s,idx)=>{
+    const totIncome = s.lahans.reduce((a,l)=>a+(parseFloat(l.pendapatan)||0),0);
+    const totWeight = s.lahans.reduce((a,l)=>a+(parseFloat(l.berat)||0),0);
+    const totBags   = s.lahans.reduce((a,l)=>a+(parseFloat(l.karung)||0),0);
+    const totLuas   = s.lahans.reduce((a,l)=>a+(parseFloat(l.luas)||0),0);
+    const done = s.lahans.filter(l=>l.panen).length;
+    return `<div class="season-card" onclick="showSeason('${s.id}')">
+      <div class="sc-top">
+        <span class="sc-name">${s.name}</span>
+        <span class="sc-count">${s.lahans.length} lahan · ${done} panen</span>
+        <span class="sc-arrow">›</span>
+        <div class="sc-move-wrap" onclick="event.stopPropagation()">
+          <button class="sc-move" onclick="moveSeason(${idx},-1)" ${idx===0?'disabled':''}>▲</button>
+          <button class="sc-move" onclick="moveSeason(${idx},1)" ${idx===n-1?'disabled':''}>▼</button>
+        </div>
+        <button class="sc-del" onclick="event.stopPropagation();confirmDeleteSeason('${s.id}')">&#10005;</button>
+      </div>
+      <div class="sc-stats">
+        <div class="sc-stat"><div class="sl">Pendapatan</div><div class="sv">${fmtRp(totIncome)}</div></div>
+        <div class="sc-stat"><div class="sl">Berat Est.</div><div class="sv">${fmtNum(totWeight)} kg</div></div>
+        <div class="sc-stat"><div class="sl">Karung</div><div class="sv">${fmtNum(totBags)} krg</div></div>
+        <div class="sc-stat"><div class="sl">Luas Garapan</div><div class="sv">${totLuas>0?fmtNum(totLuas)+' ha':'—'}</div></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function moveSeason(idx,dir){
+  const ni=idx+dir;
+  if(ni<0||ni>=db.seasons.length)return;
+  [db.seasons[idx],db.seasons[ni]]=[db.seasons[ni],db.seasons[idx]];
+  saveDb(); renderHome();
+}
+
+// ══════════════════════════════════════════════
+//  SEASON PAGE RENDER
+// ══════════════════════════════════════════════
+function renderSeasonPage(){
+  const s=db.seasons.find(x=>x.id===currentSeasonId);
+  if(!s)return goHome();
+  document.getElementById('season-page-title').textContent=s.name;
+  renderSummary();
+  const ll=document.getElementById('lahan-list');
+  if(!s.lahans.length){
+    ll.innerHTML='<div class="empty-state">Belum ada lahan.<br>Tap tombol di atas untuk menambah.</div>';
+    return;
+  }
+  ll.innerHTML=s.lahans.map((l,i)=>lahanCard(l,i,s)).join('');
+}
+
+function renderSummary(){
+  const s=db.seasons.find(x=>x.id===currentSeasonId);
+  if(!s)return;
+  const totIncome = s.lahans.reduce((a,l)=>a+(parseFloat(l.pendapatan)||0),0);
+  const totWeight = s.lahans.reduce((a,l)=>a+(parseFloat(l.berat)||0),0);
+  const totBags   = s.lahans.reduce((a,l)=>a+(parseFloat(l.karung)||0),0);
+  const totLuas   = s.lahans.reduce((a,l)=>a+(parseFloat(l.luas)||0),0);
+  document.getElementById('sum-income').textContent = fmtRp(totIncome);
+  document.getElementById('sum-weight').textContent = fmtNum(totWeight)+' kg';
+  document.getElementById('sum-bags').textContent   = fmtNum(totBags)+' krg';
+  document.getElementById('sum-luas').textContent   = totLuas>0?fmtNum(totLuas)+' ha':'0 ha';
+}
+
+// ══════════════════════════════════════════════
+//  LAHAN CARD
+// ══════════════════════════════════════════════
+function lahanCard(l,i,s){
+  const done=!!l.panen;
+  const luasStr = l.luas ? `<span class="luas-badge">📐 ${fmtNum(l.luas)} ha</span>` : '';
+  return `<div class="lahan-card" id="card-${l.id}">
+    <div class="lahan-head" onclick="toggleLahan('${l.id}')">
+      <span class="lahan-num">${String(i+1).padStart(2,'0')}</span>
+      <div class="lahan-name-wrap">
+        <div class="lahan-title">${l.name||'(tanpa nama)'}${luasStr}</div>
+        <div class="lahan-sub">${l.varietas||'-'} · ${l.metode||'-'}</div>
+      </div>
+      <span class="lahan-status ${done?'done':'pending'}">${done?'Panen ✓':'Belum panen'}</span>
+      <button class="lahan-del" onclick="event.stopPropagation();confirmDeleteLahan('${s.id}','${l.id}')">&#10005;</button>
+      <span class="lahan-chevron">&#8964;</span>
+    </div>
+    <div class="lahan-body">
+      <div class="field-grid">
+        <div class="field-group full"><label>Nama Lahan</label>
+          <input type="text" value="${l.name}" oninput="updateField('${l.id}','name',this.value)" placeholder="Nama lahan"/></div>
+
+        <div class="field-group full"><label>📐 Luas Garapan (hektar)</label>
+          <input type="number" step="0.01" value="${l.luas||''}" oninput="updateField('${l.id}','luas',this.value);renderSummary();updateLuasBadge('${l.id}')" placeholder="cth: 0.5 atau 1.25"/></div>
+
+        <div class="field-group"><label>Tanggal Tanam</label>
+          <input type="date" value="${l.tanam}" oninput="updateField('${l.id}','tanam',this.value)"/></div>
+        <div class="field-group"><label>Tanggal Panen</label>
+          <input type="date" value="${l.panen}" oninput="updateField('${l.id}','panen',this.value)"/></div>
+        <div class="field-group"><label>Varietas</label>
+          <input type="text" value="${l.varietas}" oninput="updateField('${l.id}','varietas',this.value)" placeholder="Cth: Legowo"/></div>
+        <div class="field-group"><label>Metode</label>
+          <div class="metode-wrap" id="metode-wrap-${l.id}">
+            ${renderMetodePills(l)}
+            <button class="metode-add-btn" onclick="event.stopPropagation();addMetode('${l.id}')">＋</button>
+          </div></div>
+        <div class="field-group"><label>Perolehan Karung</label>
+          <input type="number" value="${l.karung}" oninput="updateField('${l.id}','karung',this.value);recalc('${l.id}')" placeholder="0"/></div>
+        <div class="field-group"><label>Berat Estimasi (kg)</label>
+          <input type="number" value="${l.berat}" oninput="updateField('${l.id}','berat',this.value);recalc('${l.id}')" placeholder="0"/></div>
+        <div class="field-group"><label>Harga (Rp/kg)</label>
+          <input type="number" value="${l.harga}" oninput="updateField('${l.id}','harga',this.value);recalc('${l.id}')" placeholder="0"/></div>
+        <div class="field-group"><label>Pendapatan (Rp)</label>
+          <input type="number" value="${l.pendapatan}" id="inp-pendapatan-${l.id}" oninput="updateField('${l.id}','pendapatan',this.value);renderSummary()" placeholder="0"/></div>
+        <div class="field-group"><label>Rata-rata (kg/krg)</label>
+          <input type="number" value="${l.ratarata}" id="inp-ratarata-${l.id}" oninput="updateField('${l.id}','ratarata',this.value)" placeholder="0"/></div>
+        <div class="field-group"><label>Ongkos Ojek (Rp)</label>
+          <input type="number" value="${l.ojek}" oninput="updateField('${l.id}','ojek',this.value)" placeholder="0"/></div>
+        <div class="field-group"><label>Pengepul</label>
+          <input type="text" value="${l.pengepul}" oninput="updateField('${l.id}','pengepul',this.value)" placeholder="Nama pengepul"/></div>
+        <div class="field-group full"><label>Catatan</label>
+          <textarea oninput="updateField('${l.id}','catatan',this.value)" placeholder="Catatan tambahan...">${l.catatan}</textarea></div>
+      </div>
+      <div class="result-row">
+        <div class="res-box"><div class="rl">Karung</div><div class="rv" id="res-karung-${l.id}">${fmtNum(l.karung||0)}</div></div>
+        <div class="res-box"><div class="rl">Berat Est.</div><div class="rv" id="res-berat-${l.id}">${fmtNum(l.berat||0)} kg</div></div>
+        <div class="res-box"><div class="rl">Pendapatan</div><div class="rv" id="res-income-${l.id}">${fmtRp(l.pendapatan||0)}</div></div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function toggleLahan(lid){ document.getElementById('card-'+lid).classList.toggle('open'); }
+
+function updateField(lid,field,val){
+  const s=db.seasons.find(x=>x.id===currentSeasonId);
+  const l=s.lahans.find(x=>x.id===lid);
+  l[field]=val;
+  saveDb();
+  if(field==='name'){
+    const el=document.querySelector(`#card-${lid} .lahan-title`);
+    if(el){
+      const luas=l.luas?`<span class="luas-badge">📐 ${fmtNum(l.luas)} ha</span>`:'';
+      el.innerHTML=(val||'(tanpa nama)')+luas;
+    }
+  }
+  if(field==='panen'){
+    const el=document.querySelector(`#card-${lid} .lahan-status`);
+    if(el){el.textContent=val?'Panen ✓':'Belum panen';el.className='lahan-status '+(val?'done':'pending');}
+  }
+}
+
+function updateLuasBadge(lid){
+  const s=db.seasons.find(x=>x.id===currentSeasonId);
+  const l=s.lahans.find(x=>x.id===lid);
+  const el=document.querySelector(`#card-${lid} .lahan-title`);
+  if(el){
+    const luas=l.luas?`<span class="luas-badge">📐 ${fmtNum(l.luas)} ha</span>`:'';
+    el.innerHTML=(l.name||'(tanpa nama)')+luas;
+  }
+}
+
+function recalc(lid){
+  const s=db.seasons.find(x=>x.id===currentSeasonId);
+  const l=s.lahans.find(x=>x.id===lid);
+  const berat=parseFloat(l.berat)||0;
+  const harga=parseFloat(l.harga)||0;
+  const karung=parseFloat(l.karung)||0;
+  if(karung>0&&berat>0){
+    const rr=berat/karung;
+    l.ratarata=rr.toFixed(4);
+    const inp=document.getElementById('inp-ratarata-'+lid);
+    if(inp)inp.value=rr.toFixed(2);
+  }
+  if(berat>0&&harga>0){
+    const pendapatan=berat*harga;
+    l.pendapatan=pendapatan.toFixed(0);
+    const inp=document.getElementById('inp-pendapatan-'+lid);
+    if(inp)inp.value=l.pendapatan;
+  }
+  const rk=document.getElementById('res-karung-'+lid);
+  const rb=document.getElementById('res-berat-'+lid);
+  const ri=document.getElementById('res-income-'+lid);
+  if(rk)rk.textContent=fmtNum(karung);
+  if(rb)rb.textContent=fmtNum(berat)+' kg';
+  if(ri)ri.textContent=fmtRp(parseFloat(l.pendapatan)||0);
+  saveDb();
+  renderSummary();
+}
+
+// ══════════════════════════════════════════════
+//  METODE PILLS
+// ══════════════════════════════════════════════
+function renderMetodePills(l){
+  if(!l.metodeList||!l.metodeList.length) l.metodeList=l.metode?[l.metode]:['Tabur'];
+  return l.metodeList.map((m,i)=>
+    `<span class="metode-pill active" onclick="event.stopPropagation()">
+      ${m}<span class="pill-del" onclick="removeMetode('${l.id}',${i})">&#10005;</span>
+    </span>`
+  ).join('');
+}
+function refreshMetodeWrap(lid){
+  const s=db.seasons.find(x=>x.id===currentSeasonId);
+  const l=s.lahans.find(x=>x.id===lid);
+  const wrap=document.getElementById('metode-wrap-'+lid);
+  if(!wrap)return;
+  const btn=wrap.querySelector('.metode-add-btn');
+  wrap.innerHTML=renderMetodePills(l);
+  wrap.appendChild(btn);
+}
+function addMetode(lid){
+  const modal=document.getElementById('modal-metode');
+  document.getElementById('metode-input').value='';
+  modal.style.display='flex';
+  setTimeout(()=>document.getElementById('metode-input').focus(),100);
+  document.getElementById('metode-save-btn').onclick=function(){
+    const val=document.getElementById('metode-input').value.trim();
+    if(!val){closeModal('modal-metode');return;}
+    const s=db.seasons.find(x=>x.id===currentSeasonId);
+    const l=s.lahans.find(x=>x.id===lid);
+    if(!l.metodeList)l.metodeList=l.metode?[l.metode]:[];
+    l.metodeList.push(val);
+    l.metode=l.metodeList.join(', ');
+    saveDb(); refreshMetodeWrap(lid); closeModal('modal-metode');
+  };
+}
+function removeMetode(lid,idx){
+  const s=db.seasons.find(x=>x.id===currentSeasonId);
+  const l=s.lahans.find(x=>x.id===lid);
+  if(!l.metodeList)return;
+  l.metodeList.splice(idx,1);
+  l.metode=l.metodeList.join(', ');
+  saveDb(); refreshMetodeWrap(lid);
+}
+
+// ══════════════════════════════════════════════
+//  SEASON CRUD
+// ══════════════════════════════════════════════
+let modalSeasonMode='add';
+function openAddSeason(){
+  modalSeasonMode='add';
+  document.getElementById('modal-season-title').textContent='Tambah Musim Tanam';
+  document.getElementById('season-name-input').value='';
+  document.getElementById('modal-season').style.display='flex';
+  setTimeout(()=>document.getElementById('season-name-input').focus(),100);
+}
+function editSeasonName(){
+  modalSeasonMode='edit';
+  const s=db.seasons.find(x=>x.id===currentSeasonId);
+  document.getElementById('modal-season-title').textContent='Edit Nama Musim';
+  document.getElementById('season-name-input').value=s.name;
+  document.getElementById('modal-season').style.display='flex';
+  setTimeout(()=>document.getElementById('season-name-input').focus(),100);
+}
+function saveSeason(){
+  const nm=document.getElementById('season-name-input').value.trim();
+  if(!nm)return;
+  if(modalSeasonMode==='add'){
+    db.seasons.push({id:'s'+Date.now(),name:nm,lahans:[]});
+  } else {
+    const s=db.seasons.find(x=>x.id===currentSeasonId);
+    s.name=nm;
+    document.getElementById('season-page-title').textContent=nm;
+  }
+  saveDb(); closeModal('modal-season');
+  if(modalSeasonMode==='add')renderHome();
+}
+function confirmDeleteSeason(sid){
+  const s=db.seasons.find(x=>x.id===sid);
+  document.getElementById('confirm-title').textContent='Hapus Musim?';
+  document.getElementById('confirm-msg').textContent=`"${s.name}" dan semua data lahannya akan dihapus permanen.`;
+  document.getElementById('confirm-ok-btn').onclick=()=>{deleteSeason(sid);closeModal('modal-confirm');};
+  document.getElementById('modal-confirm').style.display='flex';
+}
+function deleteSeason(sid){ db.seasons=db.seasons.filter(x=>x.id!==sid); saveDb(); renderHome(); }
+
+// ══════════════════════════════════════════════
+//  LAHAN CRUD
+// ══════════════════════════════════════════════
+function addLahan(){
+  const s=db.seasons.find(x=>x.id===currentSeasonId);
+  s.lahans.push({id:'l'+Date.now(),name:'',luas:'',tanam:'',panen:'',varietas:'Legowo',metode:'Tabur',metodeList:['Tabur'],karung:'',berat:'',harga:'',pendapatan:'',ratarata:'',ojek:'',pengepul:'',catatan:''});
+  saveDb(); renderSeasonPage();
+  setTimeout(()=>{
+    const last=s.lahans[s.lahans.length-1];
+    const card=document.getElementById('card-'+last.id);
+    if(card){card.classList.add('open');card.scrollIntoView({behavior:'smooth',block:'center'});}
+  },50);
+}
+function confirmDeleteLahan(sid,lid){
+  const s=db.seasons.find(x=>x.id===sid);
+  const l=s.lahans.find(x=>x.id===lid);
+  document.getElementById('confirm-title').textContent='Hapus Lahan?';
+  document.getElementById('confirm-msg').textContent=`"${l.name||'(tanpa nama)'}" akan dihapus permanen dari musim ini.`;
+  document.getElementById('confirm-ok-btn').onclick=()=>{deleteLahan(sid,lid);closeModal('modal-confirm');};
+  document.getElementById('modal-confirm').style.display='flex';
+}
+function deleteLahan(sid,lid){
+  const s=db.seasons.find(x=>x.id===sid);
+  s.lahans=s.lahans.filter(x=>x.id!==lid);
+  saveDb(); renderSeasonPage();
+}
+
+// ══════════════════════════════════════════════
+//  MODAL & UTILS
+// ══════════════════════════════════════════════
+function closeModal(id){ document.getElementById(id).style.display='none'; }
+
+function fmtNum(n){
+  const v=parseFloat(n)||0;
+  return v%1===0?v.toLocaleString('id-ID'):(Math.round(v*100)/100).toLocaleString('id-ID');
+}
+function fmtRp(n){
+  const v=parseFloat(n)||0;
+  if(v>=1e9)return 'Rp '+(v/1e9).toFixed(2).replace('.',',')+' M';
+  if(v>=1e6)return 'Rp '+(v/1e6).toFixed(2).replace('.',',')+' Jt';
+  return 'Rp '+Math.round(v).toLocaleString('id-ID');
+}
+
+let toastTimer;
+function showToast(msg,type=''){
+  const el=document.getElementById('toast');
+  el.textContent=msg; el.className='toast '+type+' show';
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>el.className='toast',3000);
+}
+
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){
+    closeModal('modal-season');closeModal('modal-confirm');
+    closeModal('modal-metode');
+    if(configured)closeModal('modal-config');
+  }
+  if(e.key==='Enter'){
+    if(e.target.id==='season-name-input')saveSeason();
+    if(e.target.id==='metode-input')document.getElementById('metode-save-btn').click();
+    if(e.target.id==='cfg-key'||e.target.id==='cfg-bin')saveConfig();
+  }
+});
+
+// ══════════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════════
+const _cfg = getConfig();
+if(_cfg.apiKey && _cfg.binId){
+  configured = true;
+  loadFromBin();
+} else {
+  setHeroStatus('error','Belum dikonfigurasi');
+  openConfig();
+}
+renderHome();
+</script>
+</body>
+</html>
