@@ -395,18 +395,7 @@ async function saveToBin(){
 //  DATA STORE
 // ══════════════════════════════════════════════
 let db=JSON.parse(localStorage.getItem('catatan-padi')||'null');
-if(!db){
-  db={seasons:[{id:'s1',name:'Rendeng 2026',lahans:[
-    {id:'l1',name:'Etan',luas:'',tanam:'2025-11-17',panen:'2026-03-27',varietas:'Legowo',metode:'Tabur',metodeList:['Tabur'],karung:'112',berat:'6643',harga:'6300',pendapatan:'37315800',ratarata:'59.31',ojek:'8000',pengepul:'Yuda',catatan:''},
-    {id:'l2',name:'Sandinge mbah Mon',luas:'',tanam:'2025-11-06',panen:'2026-03-15',varietas:'Legowo',metode:'Tabur',metodeList:['Tabur'],karung:'73',berat:'4530.38',harga:'6400',pendapatan:'24608985',ratarata:'62.06',ojek:'15000',pengepul:'Rusdi',catatan:'Berat estimasi'},
-    {id:'l3',name:'Sandinge mbah Semi',luas:'',tanam:'2025-11-08',panen:'2026-03-26',varietas:'Legowo',metode:'Tabur',metodeList:['Tabur'],karung:'60',berat:'3632',harga:'6300',pendapatan:'20312120',ratarata:'60.54',ojek:'7000',pengepul:'Rusdi',catatan:''},
-    {id:'l4',name:'Sandinge lek Najak',luas:'',tanam:'2025-11-03',panen:'2026-03-15',varietas:'Legowo',metode:'Tabur',metodeList:['Tabur'],karung:'55',berat:'3413.3',harga:'6400',pendapatan:'18541015',ratarata:'62.06',ojek:'15000',pengepul:'Rusdi',catatan:'Kompensasi 7 & 12 Nov 2025.'},
-    {id:'l5',name:'Kaplingan',luas:'',tanam:'2025-11-21',panen:'',varietas:'Galur Nusantara',metode:'Tandur',metodeList:['Tandur'],karung:'11',berat:'',harga:'',pendapatan:'',ratarata:'',ojek:'',pengepul:'',catatan:''},
-    {id:'l6',name:'Ngomah',luas:'',tanam:'2025-10-25',panen:'2026-02-20',varietas:'Legowo',metode:'Tabur',metodeList:['Tabur'],karung:'73',berat:'4813',harga:'6300',pendapatan:'21256000',ratarata:'65.93',ojek:'10000',pengepul:'Agus',catatan:'Berat aktual 3.956 kg (60), estimasi total 4.813'},
-    {id:'l7',name:'Bekas Rudi',luas:'',tanam:'2025-11-09',panen:'2026-03-29',varietas:'Cibatu Legowo',metode:'Tabur',metodeList:['Tabur'],karung:'100',berat:'6053',harga:'6300',pendapatan:'29715880',ratarata:'60.54',ojek:'7000',pengepul:'Rusdi',catatan:'Panen 2 tahap: 67+33 karung'},
-    {id:'l8',name:'Tran Anyar (2 tempat)',luas:'',tanam:'2025-11-24',panen:'',varietas:'Legowo Cibatu',metode:'Tabur',metodeList:['Tabur'],karung:'',berat:'',harga:'',pendapatan:'',ratarata:'',ojek:'',pengepul:'',catatan:''}
-  ]}]};
-}
+if(!db){ db={seasons:[]}; }
 function saveDb(){
   localStorage.setItem('catatan-padi',JSON.stringify(db));
   if(configured)saveToBin();
