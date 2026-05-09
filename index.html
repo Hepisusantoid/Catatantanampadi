@@ -22,21 +22,21 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);min-height:
 
 /* ══ HOME ══ */
 #home{display:block;}
-.hero{background:var(--green);padding:52px 24px 90px;text-align:center;position:relative;overflow:hidden;}
-.hero::before{content:'🌾';position:absolute;font-size:180px;opacity:0.07;right:-20px;top:-20px;pointer-events:none;}
-.hero h1{color:#fff;font-size:26px;font-weight:700;letter-spacing:-0.3px;}
-.hero p{color:rgba(255,255,255,0.6);font-size:13px;margin-top:6px;font-weight:300;}
-.hero-status{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:14px;font-size:12px;color:rgba(255,255,255,0.7);font-weight:500;}
+.hero{background:var(--green);padding:36px 24px 24px;text-align:center;position:relative;overflow:hidden;}
+.hero::before{content:'🌾';position:absolute;font-size:140px;opacity:0.07;right:-20px;top:-20px;pointer-events:none;}
+.hero h1{color:#fff;font-size:24px;font-weight:700;letter-spacing:-0.3px;}
+.hero p{color:rgba(255,255,255,0.6);font-size:13px;margin-top:4px;font-weight:300;}
+.hero-status{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:12px;font-size:12px;color:rgba(255,255,255,0.7);font-weight:500;}
 .hero-dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,0.4);flex-shrink:0;}
 .hero-dot.ok{background:#69f0ae;}
 .hero-dot.loading{background:#ffd740;animation:pulse 1s infinite;}
 .hero-dot.error{background:#ff5252;}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
-.hero-actions{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:16px;}
+.hero-actions{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:12px;}
 .hero-cfg-btn{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.25);border-radius:20px;color:#fff;font-size:12px;font-weight:600;padding:6px 14px;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;transition:background 0.18s;}
 .hero-cfg-btn:hover{background:rgba(255,255,255,0.25);}
 
-.seasons-wrap{max-width:520px;margin:-48px auto 40px;padding:0 18px;}
+.seasons-wrap{max-width:520px;margin:0 auto 40px;padding:16px 18px 0;}
 .fab{position:fixed;bottom:28px;right:22px;width:56px;height:56px;background:var(--green);color:#fff;border:none;border-radius:50%;font-size:28px;line-height:1;box-shadow:0 4px 18px rgba(45,106,79,0.35);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background 0.2s,transform 0.18s,box-shadow 0.18s;z-index:100;}
 .fab:hover{background:var(--green2);transform:scale(1.08);box-shadow:0 6px 24px rgba(45,106,79,0.45);}
 .fab:active{transform:scale(0.95);}
@@ -63,13 +63,13 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);min-height:
 /* ══ SEASON PAGE ══ */
 .page{display:none;min-height:100vh;}
 .page.active{display:block;}
-.page-header{background:var(--green);padding:20px 18px 64px;display:flex;align-items:center;gap:12px;}
+.page-header{background:var(--green);padding:20px 18px;display:flex;align-items:center;gap:12px;}
 .back-btn{background:rgba(255,255,255,0.15);border:none;border-radius:10px;width:38px;height:38px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#fff;font-size:18px;flex-shrink:0;transition:background 0.15s;}
 .back-btn:hover{background:rgba(255,255,255,0.25);}
 .page-header h2{color:#fff;font-size:19px;font-weight:700;flex:1;}
 .edit-season-name{background:rgba(255,255,255,0.15);border:none;border-radius:8px;padding:4px 10px;color:#fff;font-size:13px;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;transition:background 0.15s;}
 .edit-season-name:hover{background:rgba(255,255,255,0.25);}
-.season-content{max-width:520px;margin:-44px auto 40px;padding:0 18px;}
+.season-content{max-width:520px;margin:0 auto 40px;padding:16px 18px 0;}
 
 /* Summary */
 .summary-bar{background:var(--card);border:1.5px solid var(--border);border-radius:16px;padding:16px 18px;margin-bottom:16px;}
@@ -105,7 +105,6 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);min-height:
 .lahan-del:hover{background:var(--dangerlt);color:var(--danger);}
 .lahan-body{display:none;padding:0 16px 16px;border-top:1px solid var(--border);}
 .lahan-card.open .lahan-body{display:block;}
-.lahan-badge-impor{display:inline-block;background:var(--purplelt);color:var(--purple);font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;margin-left:6px;vertical-align:middle;}
 .luas-badge{display:inline-block;background:var(--bluelt);color:var(--blue);font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;margin-left:4px;vertical-align:middle;}
 
 .field-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px;}
@@ -513,12 +512,11 @@ function renderSummary(){
 function lahanCard(l,i,s){
   const done=!!l.panen;
   const luasStr=l.luas?`<span class="luas-badge">📐 ${fmtNum(l.luas)} ha</span>`:'';
-  const imporStr=l._impor?`<span class="lahan-badge-impor">impor</span>`:'';
   return `<div class="lahan-card" id="card-${l.id}">
     <div class="lahan-head" onclick="toggleLahan('${l.id}')">
       <span class="lahan-num">${String(i+1).padStart(2,'0')}</span>
       <div class="lahan-name-wrap">
-        <div class="lahan-title">${l.name||'(tanpa nama)'}${luasStr}${imporStr}</div>
+        <div class="lahan-title">${l.name||'(tanpa nama)'}${luasStr}</div>
         <div class="lahan-sub">${l.varietas||'-'} · ${l.metode||'-'}</div>
       </div>
       <span class="lahan-status ${done?'done':'pending'}">${done?'Panen ✓':'Belum panen'}</span>
@@ -579,8 +577,7 @@ function updateField(lid,field,val){
     const el=document.querySelector(`#card-${lid} .lahan-title`);
     if(el){
       const luas=l.luas?`<span class="luas-badge">📐 ${fmtNum(l.luas)} ha</span>`:'';
-      const imp=l._impor?`<span class="lahan-badge-impor">impor</span>`:'';
-      el.innerHTML=(val||'(tanpa nama)')+luas+imp;
+      el.innerHTML=(val||'(tanpa nama)')+luas;
     }
   }
   if(field==='panen'){
@@ -594,8 +591,7 @@ function updateLuasBadge(lid){
   const el=document.querySelector(`#card-${lid} .lahan-title`);
   if(el){
     const luas=l.luas?`<span class="luas-badge">📐 ${fmtNum(l.luas)} ha</span>`:'';
-    const imp=l._impor?`<span class="lahan-badge-impor">impor</span>`:'';
-    el.innerHTML=(l.name||'(tanpa nama)')+luas+imp;
+    el.innerHTML=(l.name||'(tanpa nama)')+luas;
   }
 }
 function recalc(lid){
