@@ -158,6 +158,17 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);min-height:
 .toast.show{transform:translateX(-50%) translateY(0);opacity:1;}
 .toast.ok{background:var(--green);}
 .toast.err{background:var(--danger);}
+
+/* BACKUP */
+.backup-section{background:var(--bg);border-radius:10px;border:1.5px dashed var(--border);padding:14px 16px;margin-top:14px;}
+.backup-section-title{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:10px;}
+.backup-btn-row{display:flex;gap:8px;flex-wrap:wrap;}
+.backup-btn{display:inline-flex;align-items:center;gap:5px;padding:8px 14px;border-radius:8px;font-size:12px;font-weight:700;border:none;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;transition:background 0.18s;}
+.backup-btn.download{background:var(--greenlt);color:var(--green);}
+.backup-btn.download:hover{background:var(--greenmd);}
+.backup-btn.restore{background:var(--bluelt);color:var(--blue);}
+.backup-btn.restore:hover{background:#bbdefb;}
+.restore-info{font-size:11px;color:var(--muted);margin-top:8px;line-height:1.5;}
 </style>
 </head>
 <body>
@@ -173,6 +184,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);min-height:
     </div>
     <div class="hero-actions">
       <button class="hero-cfg-btn" onclick="openConfig()">⚙️ Konfigurasi JSONBin</button>
+      <button class="hero-cfg-btn" onclick="openBackupModal()">💾 Backup</button>
     </div>
   </div>
   <div class="seasons-wrap">
@@ -282,6 +294,36 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);min-height:
     <div class="modal-btns">
       <button class="mbtn secondary" onclick="closeModal('modal-impor')">Batal</button>
       <button class="mbtn primary" onclick="doImpor()">⬇️ Impor Lahan Dipilih</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL: Backup & Restore ══ -->
+<div id="modal-backup" class="modal-overlay" style="display:none;" onclick="if(event.target===this)closeModal('modal-backup')">
+  <div class="modal-box" onclick="event.stopPropagation()">
+    <h3>💾 Backup & Restore Data</h3>
+    <p class="modal-desc">Download seluruh data musim & lahan sebagai file JSON, atau pulihkan dari backup sebelumnya.</p>
+    <div class="backup-section">
+      <div class="backup-section-title">⬇️ Download Backup</div>
+      <div class="backup-btn-row">
+        <button class="backup-btn download" onclick="doDownloadBackup()">💾 Download JSON</button>
+      </div>
+      <div class="restore-info">File JSON berisi semua musim, lahan, dan data panen. Simpan di tempat aman.</div>
+    </div>
+    <div class="backup-section" style="margin-top:10px;">
+      <div class="backup-section-title">⬆️ Restore dari Backup</div>
+      <div class="backup-btn-row">
+        <label class="backup-btn restore" style="cursor:pointer;">
+          📂 Pilih File JSON
+          <input type="file" id="restore-file-input" accept=".json" style="display:none;" onchange="onRestoreFileSelected(this)"/>
+        </label>
+      </div>
+      <div class="restore-info" id="restore-file-info">Pilih file backup (.json) yang sebelumnya didownload dari app ini.</div>
+      <div id="restore-preview" style="display:none;margin-top:10px;"></div>
+    </div>
+    <div class="modal-btns" style="margin-top:16px;">
+      <button class="mbtn secondary" onclick="closeModal('modal-backup')">Tutup</button>
+      <button class="mbtn primary" id="btn-do-restore" style="display:none;" onclick="doRestore()">⬆️ Pulihkan Data</button>
     </div>
   </div>
 </div>
@@ -726,6 +768,75 @@ document.addEventListener('keydown',e=>{
     if(e.target.id==='cfg-key'||e.target.id==='cfg-bin')saveConfig();
   }
 });
+
+// ══════════════════════════════════════════════
+//  BACKUP & RESTORE
+// ══════════════════════════════════════════════
+let _restoreData=null;
+
+function openBackupModal(){
+  _restoreData=null;
+  document.getElementById('restore-preview').style.display='none';
+  document.getElementById('btn-do-restore').style.display='none';
+  document.getElementById('restore-file-info').textContent='Pilih file backup (.json) yang sebelumnya didownload dari app ini.';
+  document.getElementById('restore-file-input').value='';
+  document.getElementById('modal-backup').style.display='flex';
+}
+
+function doDownloadBackup(){
+  const now=new Date();
+  const stamp=now.toISOString().slice(0,10);
+  const payload={
+    _app:'catatan-padi',
+    _version:1,
+    _exported:now.toISOString(),
+    seasons:db.seasons
+  };
+  const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  a.download=`backup-catatan-padi-${stamp}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('✓ File backup didownload!','ok');
+}
+
+function onRestoreFileSelected(input){
+  const file=input.files[0];
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      const data=JSON.parse(e.target.result);
+      if(!data.seasons||!Array.isArray(data.seasons)) throw new Error('Format tidak valid — bukan file backup Catatan Padi');
+      _restoreData=data;
+      const totalLahan=data.seasons.reduce((a,s)=>a+(s.lahans?.length||0),0);
+      document.getElementById('restore-file-info').textContent=`✅ File valid: ${data.seasons.length} musim, ${totalLahan} lahan`;
+      document.getElementById('restore-preview').style.display='block';
+      document.getElementById('restore-preview').innerHTML=
+        `<div style="background:var(--dangerlt);border:1px solid #f5c6cb;border-radius:8px;padding:10px 12px;font-size:12px;color:var(--danger);line-height:1.6;">
+          ⚠️ <strong>Peringatan:</strong> Restore akan <strong>mengganti semua data yang ada sekarang</strong> dengan data dari file ini. Tindakan ini tidak bisa dibatalkan.
+        </div>`;
+      document.getElementById('btn-do-restore').style.display='block';
+    }catch(err){
+      _restoreData=null;
+      document.getElementById('restore-file-info').textContent='⚠ '+err.message;
+      document.getElementById('btn-do-restore').style.display='none';
+    }
+  };
+  reader.readAsText(file);
+}
+
+function doRestore(){
+  if(!_restoreData)return;
+  if(!confirm(`Yakin mau mengganti semua data dengan backup dari ${_restoreData._exported?.slice(0,10)||'file ini'}?\n\nData saat ini akan hilang!`))return;
+  db.seasons=_restoreData.seasons;
+  saveDb();
+  closeModal('modal-backup');
+  renderHome();
+  showToast('✓ Data berhasil dipulihkan!','ok');
+}
 
 // ══════════════════════════════════════════════
 //  INIT
